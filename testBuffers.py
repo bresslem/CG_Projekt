@@ -1,5 +1,7 @@
-import pygame as pg
-from pygame.locals import *
+# import pygame as pg
+# from pygame.locals import *
+
+from glfw.GLFW import *
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -66,15 +68,16 @@ void main()
 #      7,2,11], dtype='int16')
 
 def main():
-    pg.init()
-    display = (1280, 720)
-    pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 3)
-    pg.display.gl_set_attribute(pg.GL_CONTEXT_MINOR_VERSION, 0)
-    pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
-    pg.display.set_mode(display, DOUBLEBUF|OPENGL)
+    # pg.init()
+    # display = (1280, 720)
+    # pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 3)
+    # pg.display.gl_set_attribute(pg.GL_CONTEXT_MINOR_VERSION, 0)
+    # pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
+    # pg.display.set_mode(display, DOUBLEBUF|OPENGL)
     # print(glGetString(GL_VERSION))
+    # gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
 
-    gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
+    glfwInit()
 
     vertexShader = glCreateShader(GL_VERTEX_SHADER)
     glShaderSource(vertexShader, vertexShaderSource)
