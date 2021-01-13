@@ -6,6 +6,9 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from OpenGL.arrays import vbo
 
+# OpenGL.USE_ACCELERATE = False
+# OpenGL.ERROR_CHECKING = False
+
 import numpy
 import sys
 
@@ -79,6 +82,9 @@ def icosahedron():
     glEnd()
 
 def main():
+    # glutInit(sys.argv)
+    # glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+    # glutCreateWindow('interactive')
     pg.init()
     display = (1280, 720)
     pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 3)
@@ -86,8 +92,12 @@ def main():
     pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
     pg.display.set_mode(display, DOUBLEBUF|OPENGL)
     print(glGetString(GL_VERSION))
+    # err = glGetError()
+    # if (err != GL_NO_ERROR):
+    #     print('GLERROR: ', gluErrorString( err ))
+    #     sys.exit()
 
-    # gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
+    gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
 
     VAO = glGenVertexArrays(1)
     glBindVertexArray(VAO)
