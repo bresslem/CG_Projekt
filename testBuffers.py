@@ -77,7 +77,19 @@ def main():
     # print(glGetString(GL_VERSION))
     # gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
 
-    glfwInit()
+    glfwInit
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
+
+# if Apple:
+    # glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
+
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", None, None)
+
+    glfwMakeContextCurrent(window)
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback)
+
 
     vertexShader = glCreateShader(GL_VERTEX_SHADER)
     glShaderSource(vertexShader, vertexShaderSource)
@@ -125,12 +137,12 @@ def main():
     glBindVertexArray(0)
 
 
-    while True:
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                pg.quit()
-                quit()
-        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+    while (not glfwWindowShouldClose(window)):
+        processInput(window)
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f)
+        glClear(GL_COLOR_BUFFER_BIT)
+        
         glUseProgram(shaderProgram)
         glBindVertexArray(VAO)
         # glDrawArrays(GL_TRIANGLES, 0, 3)
