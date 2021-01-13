@@ -9,15 +9,12 @@ from OpenGL.arrays import vbo
 import numpy
 import sys
 
-vertexShaderSource = """#version 150
-uniform mat4  cProjectionMatrix;
-uniform mat4  cModelviewMatrix;
-
-in vec4 in_Position;
+vertexShaderSource = """#version 460 core
+layout (location = 0) in vec3 aPos;
 
 void main()
 {
-  gl_Position = cProjectionMatrix * cModelviewMatrix * in_Position;
+    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
 } """
 
 
@@ -25,7 +22,7 @@ fragmentShaderSource = """#version 150
 out vec4 out_color;
 void main()
 {
-  out_color = vec4( 1.0, 0.0, 1.0, 1.0 );
+  out_color = vec4( 1.0f, 1.0f, 1.0f, 1.0f);
 }"""
 
 
