@@ -128,7 +128,8 @@ def main():
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         glUseProgram(shaderProgram)
         glBindVertexArray(VAO)
-        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0)
+        glDrawArrays(GL_TRIANGLES, 0, 3)
+        # glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0)
         pg.display.flip()
         pg.time.wait(10)
 
