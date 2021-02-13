@@ -1,7 +1,7 @@
 # import pygame as pg
 # from pygame.locals import *
 
-from glfw.GLFW import *
+import glfw
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -10,13 +10,16 @@ from OpenGL.arrays import vbo
 
 import numpy
 import sys
+import ctypes
 
 vertexShaderSource = """#version 330 core
-layout (location = 0) in vec3 aPos;
+uniform mat4 cProjectionMatrix;
+uniform mat4 cModelviewMatrix;
+in vec4 in_Position;
 
 void main()
 {
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    gl_Position = cProjectionMatrix * cModelviewMatrix * in_Position;
 } """
 
 
@@ -24,72 +27,59 @@ fragmentShaderSource = """#version 330 core
 out vec4 out_color;
 void main()
 {
-  out_color = vec4( 1.0f, 1.0f, 1.0f, 1.0f);
+  out_color = vec4( 1.0, 1.0, 1.0, 1.0);
 }"""
 
 
-# X = 0.52573111212
-# Z = 0.85065080835
-#
-# vertices = numpy.array(
-#     [-X, 0, Z,
-#     X, 0, Z,
-#     -X, 0, -Z,
-#     X, 0, -Z,
-#     0, Z, X,
-#     0, Z, -X,
-#     0, -Z, X,
-#     0, -Z, -X,
-#     Z, X, 0,
-#     -Z, X, 0,
-#     Z, -X, 0,
-#     -Z, -X, 0], dtype='float32')
-#
-# triangles = numpy.array(
-#     [0,4,1,
-#      0,9,4,
-#      9,5,4,
-#      4,5,8,
-#      4,8,1,
-#      8,10,1,
-#      8,3,10,
-#      5,3,8,
-#      5,2,3,
-#      2,7,3,
-#      7,10,3,
-#      7,6,10,
-#      7,11,6,
-#      11,0,6,
-#      0,1,6,
-#      6,1,10,
-#      9,0,11,
-#      9,11,2,
-#      9,2,5,
-#      7,2,11], dtype='int16')
+X = 0.52573111212
+Z = 0.85065080835
+
+vertices = numpy.array(
+    [-X, 0, Z,
+    X, 0, Z,
+    -X, 0, -Z,
+    X, 0, -Z,
+    0, Z, X,
+    0, Z, -X,
+    0, -Z, X,
+    0, -Z, -X,
+    Z, X, 0,
+    -Z, X, 0,
+    Z, -X, 0,
+    -Z, -X, 0], dtype='float32')
+
+triangles = numpy.array(
+    [0,4,1,
+     0,9,4,
+     9,5,4,
+     4,5,8,
+     4,8,1,
+     8,10,1,
+     8,3,10,
+     5,3,8,
+     5,2,3,
+     2,7,3,
+     7,10,3,
+     7,6,10,
+     7,11,6,
+     11,0,6,
+     0,1,6,
+     6,1,10,
+     9,0,11,
+     9,11,2,
+     9,2,5,
+     7,2,11], dtype='int16')
 
 def main():
-    # pg.init()
-    # display = (1280, 720)
-    # pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 3)
-    # pg.display.gl_set_attribute(pg.GL_CONTEXT_MINOR_VERSION, 0)
-    # pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
-    # pg.display.set_mode(display, DOUBLEBUF|OPENGL)
-    # print(glGetString(GL_VERSION))
-    # gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
 
-    glfwInit
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
+    glfw.init()
+    glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
+    glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
+    glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
-# if Apple:
-    # glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
+    window = glfw.create_window(1024, 720, "Icosahedron", None, None)
 
-    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", None, None)
-
-    glfwMakeContextCurrent(window)
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback)
-
+    glfw.make_context_current(window)
 
     vertexShader = glCreateShader(GL_VERTEX_SHADER)
     glShaderSource(vertexShader, vertexShaderSource)
@@ -104,20 +94,12 @@ def main():
     glAttachShader(shaderProgram, fragmentShader)
     glLinkProgram(shaderProgram)
 
+    if not glGetProgramiv(shaderProgram, GL_LINK_STATUS):
+        print(glGetProgramInfoLog(shaderProgram))
+        raise RuntimeError('Linking Error')
+
     glDeleteShader(vertexShader)
     glDeleteShader(fragmentShader)
-
-    # vertices = numpy.array([
-    #      0.5,  0.5, 0.0,
-    #      0.5, -0.5, 0.0,
-    #     -0.5, -0.5, 0.0,
-    #     -0.5,  0.5, 0.0
-    # ], dtype = 'float32')
-    #
-    # triangles = numpy.array([
-    #     0, 1, 3,
-    #     1, 2, 3
-    # ], dtype='int16')
 
     VAO = glGenVertexArrays(1)
     VBO = glGenBuffers(1)
@@ -128,27 +110,29 @@ def main():
     glBindBuffer(GL_ARRAY_BUFFER, VBO)
     glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW)
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles, GL_STATIC_DRAW)
+    # glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
+    # glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles, GL_STATIC_DRAW)
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
     glEnableVertexAttribArray(0)
-    glBindBuffer(GL_ARRAY_BUFFER, 0)
-    glBindVertexArray(0)
+    glVertexAttribPointer(0, 3, GL_FLOAT, False, 0, ctypes.c_void_p(0))
+    # glBindBuffer(GL_ARRAY_BUFFER, 0)
 
 
-    while (not glfwWindowShouldClose(window)):
-        processInput(window)
+    while (not glfw.window_should_close(window)):
+        if (glfw.get_key(window, glfw.KEY_ESCAPE) is glfw.PRESS):
+            glfw.set_window_should_close(window, True)
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f)
-        glClear(GL_COLOR_BUFFER_BIT)
-        
+        glClearColor(0.2, 0.3, 0.3, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
         glUseProgram(shaderProgram)
         glBindVertexArray(VAO)
-        # glDrawArrays(GL_TRIANGLES, 0, 3)
+
         glDrawElements(GL_TRIANGLES, 60, GL_UNSIGNED_INT, 0)
-        pg.display.flip()
-        pg.time.wait(10)
+        glfw.swap_buffers(window)
+        glfw.poll_events()
+
+    glfw.terminate()
 
 if __name__ == "__main__":
     main()
